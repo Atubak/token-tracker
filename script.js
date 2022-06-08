@@ -21,7 +21,6 @@ request.open('GET', "https://api.coingecko.com/api/v3/coins/markets?vs_currency=
 
 request.onload = () => {
     var data = JSON.parse(request.response);
-    console.log(data);
     
     if (!data) {
         const errorMessage = document.createElement('marquee');
