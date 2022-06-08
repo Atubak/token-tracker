@@ -1,3 +1,4 @@
+// initial dom stuff
 const app = document.getElementById('root');
 const logo = document.createElement('img');
 logo.src = "logo.png";
@@ -14,7 +15,7 @@ app.appendChild(myListDiv);
 app.appendChild(container);
 
 
-
+// api request
 var request = new XMLHttpRequest();
 
 request.open('GET', "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false", true);
@@ -57,10 +58,10 @@ request.onload = () => {
 
 request.send();
 
-
+// localStorage stuff
 function addToken(event) {
     const tokenName = event.target.parentElement.firstElementChild.textContent;
-        
+    
     const tokenObject = JSON.parse(request.response).find(token => {
         return token.name === tokenName;
     });
@@ -69,6 +70,15 @@ function addToken(event) {
 
     alert("Token added to your list!");
 };
+
+function removeToken(event) {
+    container.innerHTML = "";
+    const tokenName = event.target.parentElement.firstElementChild.textContent;
+
+    localStorage.removeItem(tokenName);
+    loadMyList();
+};
+
 
 function loadMyList() {
     container.innerHTML = "";
@@ -116,17 +126,45 @@ function switchList() {
     };   
 };
 
-function removeToken(event) {
-    container.innerHTML = "";
-    const tokenName = event.target.parentElement.firstElementChild.textContent;
+function getAddressApi(addr, card) {
+    var ethRequest = new XMLHttpRequest();
 
-    localStorage.removeItem(tokenName);
-    loadMyList();
+    ethRequest.open('GET', `https://api.etherscan.io/api?module=account&action=balance&address=${addr}&tag=latest&apikey=V771F82IC3UICCNZVJ4BMFNTVXZA4Q6K9Y`,true);
+
+    // console.log(ethRequest);
+    ethRequest.onload = () => {
+        var ethData = JSON.parse(ethRequest.response);
+        let ethValue = (ethData.result / 1000000000000000) / 1000;
+        console.log(ethData.result, ethValue);
+
+        const p = document.createElement('p');
+        p.classList.add("ethValue");
+        p.textContent = `Eth Balance: ${ethValue}`;
+
+        card.appendChild(p);
+    };
+
+    ethRequest.send();
+};
+
+function showAddress(address) {
+    container.innerHTML = "";
+
+    const card = document.createElement('div');
+    card.classList.add('card');
+
+    const h1 = document.createElement('h1');
+    h1.textContent = address;    
+
+    container.appendChild(card);
+    card.appendChild(h1);
+
+    getAddressApi(address, card);
 };
 
 
-
 const clickFunction = (e) => {
+
     if (e.target.textContent === "+") {
         addToken(e);       
     };
@@ -137,6 +175,11 @@ const clickFunction = (e) => {
 
     if (e.target.textContent === "X") {
         removeToken(e);
+    };
+
+    if (e.target === document.getElementsByTagName("img")[0]) {
+        let address = prompt("enter ethereum address", "0xc1e42f862d202b4a0ed552c1145735ee088f6ccf");
+        showAddress(address);
     };
 };
 
